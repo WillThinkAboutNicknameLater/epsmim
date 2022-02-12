@@ -23,10 +23,11 @@ int main(int argc, char **argv) {
     WaveEquationSolver waveEquationSolver{ gridWidth, gridHeight, numberOfSteps };
     try {
         Grid result{ };
-        auto elapsedTime{ Timer().measure([&result, &waveEquationSolver, &sourceX, &sourceY]() {
+        double elapsedTime{ Timer().measure([&result, &waveEquationSolver, &sourceX, &sourceY]() {
             result = waveEquationSolver.solve(sourceX, sourceY);
         }) };
-        std::cout << "Elapsed time: " << elapsedTime.count() << " s\n";
+
+        std::cout << "Elapsed time: " << elapsedTime << " s\n";
 
         FileWriter<double> fileWriter{ };
         fileWriter.write(filePath, *result, gridWidth * gridHeight);

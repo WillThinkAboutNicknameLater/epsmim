@@ -9,7 +9,7 @@
 
 class Timer {
 public:
-    std::chrono::duration<double> measure(const std::function<void()> &function);
+    double measure(const std::function<void()> &function);
 };
 
 #endif //TIMER_H
