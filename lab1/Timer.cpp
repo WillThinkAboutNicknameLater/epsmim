@@ -7,7 +7,6 @@
 double Timer::measure(const std::function<void()> &function) {
     auto start{ std::chrono::high_resolution_clock::now() };
     function();
-
     std::chrono::duration<double> elapsedTime{ std::chrono::high_resolution_clock::now() - start };
     return elapsedTime.count();
 }

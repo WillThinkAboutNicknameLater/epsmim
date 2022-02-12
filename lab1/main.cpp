@@ -26,7 +26,6 @@ int main(int argc, char **argv) {
         double elapsedTime{ Timer().measure([&result, &waveEquationSolver, &sourceX, &sourceY]() {
             result = waveEquationSolver.solve(sourceX, sourceY);
         }) };
-
         std::cout << "Elapsed time: " << elapsedTime << " s\n";
 
         FileWriter<double> fileWriter{ };
