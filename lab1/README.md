@@ -19,4 +19,4 @@
 ```sh
 ./run 600 600 1500 1 1 ./Results/result.600x600.dat
 ```
-![Screenshot1](/Results/result.600x600.dat.png)
+![Screenshot1](/lab1/Results/result.600x600.dat.png)
