@@ -1,0 +1,5 @@
+#!/bin/bash
+
+./cmake-build-release/waveEquationSolver $1 $2 $3 $4 $5 $6
+gnuplot -c ./gnuplotScript.p $1 $2 $6
+open $6".png"
