@@ -1,4 +1,0 @@
-#!/bin/bash
-
-./cmake-build-debug/lab1 $1 $2 $3 $4 $5 $6
-gnuplot -c ./gnuplotScript.p $1 $2 $6
