@@ -38,8 +38,6 @@ public:
 
     Grid solve(size_t sourceX, size_t sourceY);
 
-    Grid solve2(size_t sourceX, size_t sourceY);
-
 };
 
 #endif //WAVEEQUATIONSOLVER_H
