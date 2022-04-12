@@ -113,3 +113,4 @@ Grid WaveEquationSolver::solve(size_t sourceX, size_t sourceY) {
 
     return result;
 }
+
