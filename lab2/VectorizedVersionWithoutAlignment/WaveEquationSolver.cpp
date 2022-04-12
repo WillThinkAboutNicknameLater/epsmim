@@ -69,6 +69,9 @@ Grid WaveEquationSolver::solve(size_t sourceX, size_t sourceY) {
     __m256d yGridStepModifiedV{ _mm256_set1_pd(yGridStepModified) };
     __m256d deucesV{ _mm256_set1_pd(2.0) };
 
+    __m256d maxValueV{ _mm256_setzero_pd() };
+    __m256d maskForAbs{ _mm256_set1_pd(-0.) };
+
     for (size_t step{ 0 }; step < m_numberOfSteps; ++step) {
         double impulseSourceValue{ calculateImpulseSourceFunction(step, sourceY, sourceX, sourceX, sourceY) };
         size_t shift{ m_gridWidth };
@@ -78,16 +81,16 @@ Grid WaveEquationSolver::solve(size_t sourceX, size_t sourceY) {
             double *previousShiftedResult{ &(**previousResultPtr)[shift] };
             double *shiftedPhaseSpeed{ &(*phaseSpeed)[shift] };
 
-            __m256d *shiftedResultV{ (__m256d *) (shiftedResult + 1) };
-            __m256d *left{ (__m256d *) (previousShiftedResult) };
-            __m256d *center{ (__m256d *) (previousShiftedResult + 1) };
-            __m256d *right{ (__m256d *) (previousShiftedResult + 2) };
-            __m256d *leftP{ (__m256d *) (shiftedPhaseSpeed) };
-            __m256d *down{ (__m256d *) (previousShiftedResult - m_gridWidth + 1) };
-            __m256d *up{ (__m256d *) (previousShiftedResult + m_gridWidth + 1) };
-            __m256d *downLeftP{ (__m256d *) (shiftedPhaseSpeed - m_gridWidth) };
-            __m256d *centerP{ (__m256d *) (shiftedPhaseSpeed + 1) };
-            __m256d *downCenterP{ (__m256d *) (shiftedPhaseSpeed - m_gridWidth + 1) };
+            __m256d *shiftedResultV{ (__m256d * )(shiftedResult + 1) };
+            __m256d *left{ (__m256d * )(previousShiftedResult) };
+            __m256d *center{ (__m256d * )(previousShiftedResult + 1) };
+            __m256d *right{ (__m256d * )(previousShiftedResult + 2) };
+            __m256d *leftP{ (__m256d * )(shiftedPhaseSpeed) };
+            __m256d *down{ (__m256d * )(previousShiftedResult - m_gridWidth + 1) };
+            __m256d *up{ (__m256d * )(previousShiftedResult + m_gridWidth + 1) };
+            __m256d *downLeftP{ (__m256d * )(shiftedPhaseSpeed - m_gridWidth) };
+            __m256d *centerP{ (__m256d * )(shiftedPhaseSpeed + 1) };
+            __m256d *downCenterP{ (__m256d * )(shiftedPhaseSpeed - m_gridWidth + 1) };
 
             for (size_t j{ 1 }, vj{ 0 }; j < m_gridWidth - 4; j += 4, ++vj) {
                 __m256d currentImpulseSourceValueV{ _mm256_setzero_pd() };
@@ -117,7 +120,10 @@ Grid WaveEquationSolver::solve(size_t sourceX, size_t sourceY) {
                               (currentDownLeftP +
                                currentDownCenterP)) *
                              (yGridStepModifiedV)) };
-                shiftedResultV[vj] = _mm256_fmadd_pd(timeStepSquaredV, e2, e1);
+
+                __m256d computedValueV{ _mm256_fmadd_pd(timeStepSquaredV, e2, e1) };
+                maxValueV = _mm256_max_pd(_mm256_andnot_pd(maskForAbs, computedValueV), maxValueV);
+                shiftedResultV[vj] = computedValueV;
             }
 
             for (size_t j{ m_gridWidth - (m_gridWidth - 1) % 4 }; j < m_gridWidth - 1; ++j) {
@@ -152,6 +158,13 @@ Grid WaveEquationSolver::solve(size_t sourceX, size_t sourceY) {
 
         std::swap(resultPtr, previousResultPtr);
     }
+
+    double maxValue{ 0 };
+    double *buffer{ (double *) (&maxValueV) };
+    for (size_t i{ 0 }; i < 4; ++i) {
+        maxValue = std::max(maxValue, buffer[i]);
+    }
+    std::cout << "Max value = " << maxValue << std::endl;
 
     return result;
 }
