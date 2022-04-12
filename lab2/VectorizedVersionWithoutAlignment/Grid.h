@@ -19,7 +19,7 @@ public:
     Grid() = default;
 
     Grid(size_t gridHeight, size_t gridWidth, double initialValue = 0.0) : m_height{ gridHeight }, m_width{ gridWidth },
-                                                                           m_data{ new double[gridHeight * gridWidth]) } {
+                                                                           m_data{ new double[gridHeight * gridWidth] } {
         if (m_data == nullptr) {
             throw MemoryNotAllocatedException{ "Failed to allocate memory for Grid" };
         }
