@@ -63,6 +63,8 @@ Grid WaveEquationSolver::solve(size_t sourceX, size_t sourceY) {
     double xGridStepModified{ 1 / (2 * m_xGridStep * m_xGridStep) };
     double yGridStepModified{ 1 / (2 * m_yGridStep * m_yGridStep) };
 
+    double maxValue{ 0 };
+
     for (size_t step{ 0 }; step < m_numberOfSteps; ++step) {
         double impulseSourceValue{ calculateImpulseSourceFunction(step, sourceY, sourceX, sourceX, sourceY) };
         size_t shift{ m_gridWidth };
@@ -84,26 +86,30 @@ Grid WaveEquationSolver::solve(size_t sourceX, size_t sourceY) {
                 double pij1{ shiftedPhaseSpeed[j - 1] };
                 double pi1j1{ shiftedPhaseSpeed[-m_gridWidth + j - 1] };
 
-                shiftedResult[j] = 2 * currentU - shiftedResult[j] + timeStepSquared *
-                                                                     (currentImpulseSourceValue +
-                                                                      ((previousShiftedResult[j + 1] - currentU) *
-                                                                       (pi1j + pij) +
-                                                                       (previousShiftedResult[j - 1] - currentU) *
-                                                                       (pi1j1 + pij1)) *
-                                                                      (xGridStepModified) +
-                                                                      ((previousShiftedResult[m_gridWidth + j] -
-                                                                        currentU) *
-                                                                       (pij1 + pij) +
-                                                                       (previousShiftedResult[-m_gridWidth + j] -
-                                                                        currentU) *
-                                                                       (pi1j1 + pi1j)) *
-                                                                      (yGridStepModified));
+                double computedValue{ 2 * currentU - shiftedResult[j] + timeStepSquared *
+                                                                        (currentImpulseSourceValue +
+                                                                         ((previousShiftedResult[j + 1] - currentU) *
+                                                                          (pi1j + pij) +
+                                                                          (previousShiftedResult[j - 1] - currentU) *
+                                                                          (pi1j1 + pij1)) *
+                                                                         (xGridStepModified) +
+                                                                         ((previousShiftedResult[m_gridWidth + j] -
+                                                                           currentU) *
+                                                                          (pij1 + pij) +
+                                                                          (previousShiftedResult[-m_gridWidth + j] -
+                                                                           currentU) *
+                                                                          (pi1j1 + pi1j)) *
+                                                                         (yGridStepModified)) };
+                maxValue = std::max(std::abs(computedValue), maxValue);
+                shiftedResult[j] = computedValue;
             }
             shift += m_gridWidth;
         }
 
         std::swap(resultPtr, previousResultPtr);
     }
+
+    std::cout << "Max value = " << maxValue << std::endl;
 
     return result;
 }
