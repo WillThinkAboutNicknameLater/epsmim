@@ -82,45 +82,47 @@ Grid WaveEquationSolver::solve(size_t sourceX, size_t sourceY) {
             double *previousShiftedResult{ &(**previousResultPtr)[shift] };
             double *shiftedPhaseSpeed{ &(*phaseSpeed)[shift] };
 
-            __m256d *shiftedResultV{ (__m256d * )(shiftedResult + 1) };
-            __m256d *left{ (__m256d * )(previousShiftedResult) };
-            __m256d *center{ (__m256d * )(previousShiftedResult + 1) };
-            __m256d *right{ (__m256d * )(previousShiftedResult + 2) };
-            __m256d *leftP{ (__m256d * )(shiftedPhaseSpeed) };
-            __m256d *down{ (__m256d * )(previousShiftedResult - m_gridWidth + 1) };
-            __m256d *up{ (__m256d * )(previousShiftedResult + m_gridWidth + 1) };
-            __m256d *downLeftP{ (__m256d * )(shiftedPhaseSpeed - m_gridWidth) };
-            __m256d *centerP{ (__m256d * )(shiftedPhaseSpeed + 1) };
-            __m256d *downCenterP{ (__m256d * )(shiftedPhaseSpeed - m_gridWidth + 1) };
+            __m256d *shiftedResultV{ (__m256d *) (shiftedResult + 1) };
+
+            __m256d *topU{ (__m256d *) (previousShiftedResult - m_gridWidth + 1) };
+            __m256d *leftU{ (__m256d *) (previousShiftedResult) };
+            __m256d *middleU{ (__m256d *) (previousShiftedResult + 1) };
+            __m256d *rightU{ (__m256d *) (previousShiftedResult + 2) };
+            __m256d *bottomU{ (__m256d *) (previousShiftedResult + m_gridWidth + 1) };
+
+            __m256d *topLeftP{ (__m256d *) (shiftedPhaseSpeed - m_gridWidth) };
+            __m256d *topP{ (__m256d *) (shiftedPhaseSpeed - m_gridWidth + 1) };
+            __m256d *leftP{ (__m256d *) (shiftedPhaseSpeed) };
+            __m256d *middleP{ (__m256d *) (shiftedPhaseSpeed + 1) };
 
             for (size_t j{ 1 }, vj{ 0 }; j < m_gridWidth - 4; j += 4, ++vj) {
                 __m256d currentImpulseSourceValueV{ _mm256_setzero_pd() };
                 if (i == sourceY && sourceX >= j && int(sourceX) - int(j) < 4) {
                     currentImpulseSourceValueV[sourceX - j] = impulseSourceValue;
                 }
-                __m256d currentCenter{ center[vj] };
-                __m256d currentDownCenterP{ downCenterP[vj] };
+                __m256d currentMiddleU{ middleU[vj] };
+                __m256d currentTopP{ topP[vj] };
                 __m256d currentLeftP{ leftP[vj] };
-                __m256d currentCenterP{ centerP[vj] };
-                __m256d currentDownLeftP{ downLeftP[vj] };
+                __m256d currentMiddleP{ middleP[vj] };
+                __m256d currentTopLeftP{ topLeftP[vj] };
 
-                __m256d e1{ _mm256_fmsub_pd(deucesV, currentCenter, shiftedResultV[vj]) };
+                __m256d e1{ _mm256_fmsub_pd(deucesV, currentMiddleU, shiftedResultV[vj]) };
                 __m256d e2{ (currentImpulseSourceValueV +
-                             ((right[vj] - currentCenter) *
-                              (currentDownCenterP +
-                               currentCenterP) +
-                              (left[vj] - currentCenter) *
-                              (currentDownLeftP +
+                             ((rightU[vj] - currentMiddleU) *
+                              (currentTopP +
+                               currentMiddleP) +
+                              (leftU[vj] - currentMiddleU) *
+                              (currentTopLeftP +
                                currentLeftP)) *
-                             (xGridStepModifiedV) +
-                             ((up[vj] -
-                               currentCenter) *
-                              (currentLeftP + currentCenterP) +
-                              (down[vj] -
-                               currentCenter) *
-                              (currentDownLeftP +
-                               currentDownCenterP)) *
-                             (yGridStepModifiedV)) };
+                             xGridStepModifiedV +
+                             ((bottomU[vj] -
+                               currentMiddleU) *
+                              (currentLeftP + currentMiddleP) +
+                              (topU[vj] -
+                               currentMiddleU) *
+                              (currentTopLeftP +
+                               currentTopP)) *
+                             yGridStepModifiedV) };
 
                 __m256d computedValueV{ _mm256_fmadd_pd(timeStepSquaredV, e2, e1) };
                 maxValueV = _mm256_max_pd(_mm256_andnot_pd(maskForAbs, computedValueV), maxValueV);
