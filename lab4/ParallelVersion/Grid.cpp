@@ -30,7 +30,6 @@ void Grid::print() const {
 void Grid::fill(double value) {
     size_t shift{ 0 };
     for (size_t i{ 0 }; i < m_height; ++i) {
-        #pragma omp parallel for proc_bind(spread)
         for (size_t j{ 0 }; j < m_width; ++j) {
             m_data[shift + j] = value;
         }
@@ -95,7 +94,6 @@ Grid &Grid::operator=(const Grid &other) {
 
     size_t shift{ 0 };
     for (size_t i{ 0 }; i < m_height; ++i) {
-        #pragma omp parallel for proc_bind(spread)
         for (size_t j{ 0 }; j < m_width; ++j) {
             m_data[shift + j] = (*other)[shift + j];
         }
