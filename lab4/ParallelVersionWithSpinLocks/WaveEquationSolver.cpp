@@ -192,6 +192,8 @@ Grid WaveEquationSolver::solve(size_t sourceX, size_t sourceY) {
         auto currentThreadBarrier{ barriers[shift] };
         auto nextThreadBarrier{ barriers[(threadNumber + 1) * distance] };
 
+        
+        // Вариант 1
         if (threadNumber == 0) {
             for (size_t i{ startIndex }; i <= endIndex - 1; ++i) {
                 calculateRow(i, resultPtrPerThread[shift], previousResultPtrPerThread[shift], phaseSpeed, sourceX,
@@ -273,6 +275,7 @@ Grid WaveEquationSolver::solve(size_t sourceX, size_t sourceY) {
             ++currentThreadBarrier[1];
         }
 
+        // Вариант 2
         /*if (threadNumber == 0) {
             for (size_t i{ startIndex }; i <= endIndex - 1; ++i) {
                 calculateRow(i, resultPtrPerThread[shift], previousResultPtrPerThread[shift], phaseSpeed, sourceX,
@@ -329,6 +332,7 @@ Grid WaveEquationSolver::solve(size_t sourceX, size_t sourceY) {
             ++currentThreadBarrier[1];
         }*/
 
+        // Вариант 3
         /*for (size_t i{ startIndex + 1 }; i <= endIndex - 1; ++i) {
             calculateRow(i, resultPtrPerThread[shift], previousResultPtrPerThread[shift], phaseSpeed, sourceX,
                          sourceY, impulseSourceValue, timeStepSquared, timeStepSquaredV,
