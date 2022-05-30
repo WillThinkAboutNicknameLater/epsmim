@@ -28,12 +28,10 @@ Grid WaveEquationSolver::calculatePhaseSpeed() const {
     size_t halfGridWidth{ size_t(0.5 * m_gridWidth) };
     size_t shift{ 0 };
     for (size_t i{ 0 }; i < m_gridHeight; ++i) {
-        #pragma omp parallel for proc_bind(spread)
         for (size_t j{ 0 }; j < halfGridWidth; ++j) {
             (*phaseSpeed)[shift + j] = 0.01;
         }
 
-        #pragma omp parallel for proc_bind(spread)
         for (size_t j{ size_t(halfGridWidth) }; j < m_gridWidth; ++j) {
             (*phaseSpeed)[shift + j] = 0.04;
         }
